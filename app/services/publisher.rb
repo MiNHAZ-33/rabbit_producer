@@ -8,8 +8,9 @@ class Publisher
     # queue is not necessary for fanout exchange
     queue = channel.queue(queue_name)
     # channel.default_exchange.publish(message.to_json, routing_key: queue.name)
-    exchange = channel.fanout(queue_name)
-    exchange.publish(message.to_json)
+    # exchange = channel.fanout(queue_name)
+    exchange = channel.direct("direct_exchange")
+    exchange.publish(message.to_json, routing_key: "direct_route")
     puts "[x] sent to #{queue_name}"
   ensure
     @connection.close if @connection.open?
