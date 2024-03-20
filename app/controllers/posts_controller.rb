@@ -23,11 +23,10 @@ class PostsController < ApplicationController
   def create
     @post = Post.new(post_params)
 
-    publisher = Publisher.new
-    publisher.publish(@post.attributes, "hello")
 
     respond_to do |format|
       if @post.save
+        Publisher.publish(@post.attributes, "direct_exchange")
         format.html { redirect_to post_url(@post), notice: "Post was successfully created." }
         format.json { render :show, status: :created, location: @post }
       else

@@ -1,32 +1,26 @@
 class Publisher
-  def initialize
-    @connection = Bunny.new
-  end
-  def publish(message, queue_name, routing_key=nil)
-    @connection.start
-    channel = @connection.create_channel
-    # queue is not necessary for fanout exchange
-    queue = channel.queue(queue_name)
-    # channel.default_exchange.publish(message.to_json, routing_key: queue.name)
-    # exchange = channel.fanout(queue_name)
-    exchange = channel.direct("direct_exchange")
-    exchange.publish(message.to_json, routing_key: "direct_route")
-    puts "[x] sent to #{queue_name}"
-  ensure
-    @connection.close if @connection.open?
-  end
+  class << self
+    def publish(message, exchange_name, routing_key=nil)
 
-  def consume
-    @connection.start
-    channel = @connection.create_channel
-    queue = channel.queue('hello')
-    begin
-      puts '[x x] waiting for message'
-      queue.subscribe(block: true) do |delivery_info, _properties, body|
-        puts "[x] recieved #{body}"
-      end
-    rescue Interrupt => _
-      @connection.close
+      # queue is not necessary for fanout exchange
+
+      # exchange = channel.fanout(queue_name)
+      exchange = channel.direct(exchange_name)
+      #no routing key needed for fanout exchange
+      exchange.publish(message.to_json, routing_key: "direct_route")
+      puts "[x] sent to #{exchange_name}"
+    # ensure
+    #   connection.close if @connection.open?
+    # end
+    end
+
+    def channel
+      @channel ||= connection.create_channel
+    end
+
+    def connection
+      @connection ||= Bunny.new
+      @connection.start
     end
   end
 end
